@@ -1,10 +1,9 @@
 from PIL import Image
 import numpy as np
-import os
-import join
-import time
-def image(sta,end,depths=10):
-    a = np.asarray(Image.open(sta).convert('L')).astype('float')
+import time,sys,join,os
+
+def image(src,dst="./new.png",depths=10):
+    a = np.asarray(Image.open(src).convert('L')).astype('float')
     depth = depths  # (0-100)
     grad = np.gradient(a)  # 取图像灰度的梯度值
     grad_x, grad_y = grad  # 分别取横纵图像梯度值
@@ -22,17 +21,35 @@ def image(sta,end,depths=10):
     b = 255 * (dx * uni_x + dy * uni_y + dz * uni_z)  # 光源归一化
     b = b.clip(0, 255)
     im = Image.fromarray(b.astype('uint8'))  # 重构图像
-    im.save(end)
+    im.save(dst)
 
-def mains(numbers):
-    number = int(numbers)
-    startss = os.listdir("./输入----图片")
-    time.sleep(2)
-    for starts in startss:
-        start = ''.join(starts)
-        print('正在转化--图片：  ' + start)
-        sta = './' + '输入----图片/' + start
-        end = './' + '输出----图片/' + 'HD_20' + start
-        image(sta=sta,end=end,depths=number)
+#解析命令行参数
+def parseArgv():
+    out={};
+    argv=sys.argv;
+    for s in argv:
+        if(len(s)<2):
+            continue;
+        if(s[:2]!='--'):
+            continue;
 
-mains(15);
+        a=s.split("=");
+        if(len(a)!=2):
+            continue;
+
+        key=a[0][2:];
+        value=a[1];
+        out[key]=value;
+
+    return out;
+
+if __name__=="__main__":
+    cmd=parseArgv();
+    
+    src=cmd["src"];
+
+    # dst=cmd["dst"];
+    # depth=cmd["depth"];
+
+    if(src is not None):
+        image(src);
